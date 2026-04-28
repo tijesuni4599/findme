@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: profile.display_name ?? username,
-    description: profile.bio ?? `${username} on NaijaLinks`,
+    description: profile.bio ?? `${username} on findme`,
     openGraph: {
       title: profile.display_name ?? username,
       description: profile.bio ?? undefined,
@@ -107,7 +107,7 @@ export default async function PublicProfilePage({ params }: Props) {
         <footer className="mt-10 text-xs opacity-60">
           Built with{" "}
           <Link href="/" className="underline">
-            NaijaLinks
+            findme
           </Link>
         </footer>
       </div>

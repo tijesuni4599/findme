@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/supabase/require-user";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent } from "@/components/ui/card";
 import { FREE_PLAN_LINK_LIMIT } from "@/lib/constants";
 import { AddLinkDialog } from "./add-link-dialog";
+import { LinksWorkspace } from "./links-workspace";
 
 export const metadata: Metadata = { title: "Links" };
 
@@ -13,19 +13,28 @@ export default async function LinksPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("plan")
+    .select("username, display_name, avatar_url, plan, theme")
     .eq("id", user.id)
     .single();
 
   const { data: links } = await supabase
     .from("links")
-    .select("id, title, url, is_enabled, position, click_count")
+    .select("id, title, url, is_enabled, position, click_count, thumbnail_url")
     .eq("profile_id", user.id)
     .order("position", { ascending: true });
 
   const linkCount = links?.length ?? 0;
   const isFree = profile?.plan === "free";
   const atLimit = isFree && linkCount >= FREE_PLAN_LINK_LIMIT;
+
+  const rawTheme = profile?.theme as
+    | { background?: string; foreground?: string }
+    | null
+    | undefined;
+  const theme = {
+    background: rawTheme?.background ?? "#f5f5f5",
+    foreground: rawTheme?.foreground ?? "#171717",
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,36 +49,16 @@ export default async function LinksPage() {
         </div>
         <AddLinkDialog disabled={atLimit} />
       </div>
-
-      {/* TODO: swap for the interactive drag-and-drop list once reorder is wired. */}
-      {linkCount === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-            <p className="font-medium">No links yet</p>
-            <p className="text-sm text-muted-foreground">
-              Add your first link so your audience has somewhere to land.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {links!.map((link) => (
-            <Card key={link.id}>
-              <CardContent className="flex items-center justify-between gap-4 p-4">
-                <div className="flex flex-col">
-                  <span className="font-medium">{link.title}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {link.url}
-                  </span>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {link.click_count} clicks
-                </span>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <LinksWorkspace
+        initialLinks={links ?? []}
+        profile={{
+          username: profile?.username ?? user.email?.split("@")[0] ?? "you",
+          display_name: profile?.display_name ?? null,
+          avatar_url: profile?.avatar_url ?? null,
+          plan: profile?.plan ?? "free",
+        }}
+        theme={theme}
+      />
     </div>
   );
 }

@@ -13,7 +13,7 @@ Guidance for any coding agent working in this repository.
 
 ## Product Context
 
-- **NaijaLinks** is a customisable link-in-bio product for Nigerian creators.
+- **findme** is a customisable link-in-bio product for Nigerian creators.
 - Main surfaces:
   - public profile page at `/[username]`
   - authenticated dashboard at `/dashboard/*`

@@ -13,7 +13,7 @@ function getResend(): Resend {
   return _resend;
 }
 
-const FROM = process.env.EMAIL_FROM ?? "NaijaLinks <hello@naijalinks.ng>";
+const FROM = process.env.EMAIL_FROM ?? "findme <hello@findme.ng>";
 
 export async function sendReceiptEmail(params: {
   to: string;
@@ -24,9 +24,9 @@ export async function sendReceiptEmail(params: {
   return getResend().emails.send({
     from: FROM,
     to: params.to,
-    subject: `Receipt for your NaijaLinks ${params.plan} subscription`,
+    subject: `Receipt for your findme ${params.plan} subscription`,
     html: `
-      <p>Thanks for subscribing to NaijaLinks ${params.plan}.</p>
+      <p>Thanks for subscribing to findme ${params.plan}.</p>
       <p><strong>Amount:</strong> ₦${params.amountNaira.toLocaleString("en-NG")}</p>
       <p><strong>Reference:</strong> ${params.reference}</p>
       <p>You can manage your subscription from your dashboard.</p>
@@ -41,7 +41,7 @@ export async function sendPaymentFailedEmail(params: {
   return getResend().emails.send({
     from: FROM,
     to: params.to,
-    subject: "Your NaijaLinks payment did not go through",
+    subject: "Your findme payment did not go through",
     html: `
       <p>We tried to charge your card but the transaction failed.</p>
       <p><strong>Reason:</strong> ${params.reason}</p>

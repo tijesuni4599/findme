@@ -71,7 +71,7 @@ export function SignupForm() {
         <Label htmlFor="username">Username</Label>
         <div className="flex items-center rounded-md border border-input bg-transparent focus-within:ring-1 focus-within:ring-ring">
           <span className="px-3 text-sm text-muted-foreground">
-            naijalinks.ng/
+            findme.ng/
           </span>
           <Input
             id="username"

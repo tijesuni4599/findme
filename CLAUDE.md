@@ -2,81 +2,129 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-@AGENTS.md
-
 ## Commands
 
-- `pnpm dev` — Next.js dev server (Turbopack).
-- `pnpm build` — Production build.
-- `pnpm start` — Serve the production build.
-- `pnpm lint` — ESLint (`eslint-config-next`).
+- `pnpm dev` — Next.js dev server (Turbopack)
+- `pnpm build` — production build
+- `pnpm start` — serve the production build
+- `pnpm lint` — ESLint (`eslint-config-next`)
 
-Use `pnpm` for all installs — `pnpm-lock.yaml` is the source of truth. No test framework is configured yet.
+Use `pnpm` for all installs — `pnpm-lock.yaml` is the source of truth. No test framework is configured; `pnpm lint` and `pnpm build` are the primary verification steps.
 
 ### Database
 
-Schema lives in `supabase/migrations/`. Apply with `supabase db push` or paste SQL into the Supabase SQL editor. After schema changes, regenerate typed clients and pass the `Database` generic to every `createServerClient` call:
+Schema lives in `supabase/migrations/`. Apply with `supabase db push` or paste SQL into the Supabase SQL editor. After schema changes, regenerate types:
 
-```
+```bash
 supabase gen types typescript --project-id <id> > lib/supabase/types.ts
 ```
 
-## Architecture
+## Product
 
-This is a scaffold for a link-in-bio product. Many features (link CRUD, theme editor, Paystack checkout, ClickHouse analytics) are stubbed — see the "Known TODOs" in `README.md` and the full spec in `../linkinbio-prd.md` before adding features.
+**findme** is a link-in-bio product for Nigerian creators. Brand constants live in `lib/constants.ts` (`APP_NAME`, `APP_DOMAIN`). The font is **Space Mono** (Google Fonts, weights 400 and 700 only — there are no others). The `<Logo />` component (`components/logo.tsx`) renders a map-pin SVG mark + wordmark using `currentColor`; use the `iconOnly` prop for compact contexts.
 
-### Next.js 16 conventions
+Main surfaces:
+- `app/[username]/` — public profile page (unauthenticated)
+- `app/(dashboard)/` — authenticated dashboard
+- `app/(auth)/` — login and signup
+- `app/api/track/` — click + pageview analytics ingest
+- `app/api/webhooks/paystack/` — billing webhook
 
-- `**proxy.ts`, not `middleware.ts`.** Next 16 renamed the file and the exported function. `proxy.ts` at the project root wires `updateSession` from `lib/supabase/middleware.ts`.
-- `**proxy.ts` is UX-only, NOT the auth boundary.** It refreshes Supabase session cookies and soft-redirects unauthenticated users. The authoritative check is `requireUser()` in `lib/supabase/require-user.ts`, which every protected layout/page must call.
-- **Cache Components are intentionally disabled** (see TODO in `next.config.ts`). Before flipping `cacheComponents: true`, wrap per-user reads in `<Suspense>` and rewrite the public `[username]` pages with `'use cache'` + `cacheTag`.
-- When unsure about a Next.js API, read the local docs in `node_modules/next/dist/docs/` — APIs have shifted in 16.x.
+## Stack
 
-### Supabase client topology
+Next.js 16.2 App Router · React 19 · TypeScript strict · Tailwind CSS 4 · shadcn/ui (`base-nova`, neutral palette, components in `components/ui/`) · Supabase Postgres + Auth · Paystack · Resend · Cloudflare R2 · Vercel
 
-Three clients, each with a single permitted use site:
+## Next.js 16 specifics
 
-- `lib/supabase/browser.ts` — client components only.
-- `lib/supabase/server.ts::createClient()` — Server Components, Server Actions, Route Handlers. Fresh client per request; cookies flow back through `setAll`.
-- `lib/supabase/server.ts::createServiceRoleClient()` — **bypasses RLS.** Only for trusted server work: `/api/webhooks/paystack`, `/api/track/*`, future cron jobs. Never import from a component.
+- The session middleware file is **`proxy.ts`** (not `middleware.ts`) — Next 16 renamed it.
+- `proxy.ts` is **UX-only**. It refreshes cookies and soft-redirects. It is not the auth boundary.
+- The authoritative auth check is `requireUser()` in `lib/supabase/require-user.ts`. Every protected layout and page must call it.
+- Cache Components are intentionally disabled in `next.config.ts`. Do not enable `cacheComponents` without wrapping per-user reads in `<Suspense>`.
+- Async params pattern is already in use — follow it:
+  ```ts
+  type Props = { params: Promise<{ username: string }> };
+  ```
+- When uncertain about a Next.js 16 API, read `node_modules/next/dist/docs/`.
 
-In `lib/supabase/middleware.ts::updateSession`, **do not insert any logic between `createServerClient()` and `supabase.auth.getUser()`**. That `getUser()` call is what triggers the token refresh and writes new cookies through `setAll` — adding code in between can cause random logouts.
+## Supabase client topology
 
-### Auth flow
+Three clients; use the right one in the right place:
 
-1. Signup/login forms post to Supabase Auth.
-2. The `handle_new_user()` DB trigger (in the initial migration) auto-creates a `profiles` row with a derived username.
-3. Magic-link / OAuth redirects hit `/auth/callback` to exchange the code for a session.
-4. Every dashboard request: `proxy.ts` refreshes the session → `requireUser()` in the dashboard layout enforces the gate.
+| Client | Where |
+|---|---|
+| `lib/supabase/browser.ts` | Client components only |
+| `lib/supabase/server.ts::createClient()` | Server Components, Server Actions, Route Handlers |
+| `lib/supabase/server.ts::createServiceRoleClient()` | Trusted server-only work that must bypass RLS (`/api/track/*`, `/api/webhooks/paystack`, future cron jobs) |
 
-### Analytics ingest
+Never import `createServiceRoleClient` from a component. In `lib/supabase/middleware.ts::updateSession`, do not insert any logic between `createServerClient()` and `supabase.auth.getUser()` — that call triggers the token refresh and cookie write.
 
-The public `[username]` page sends click/pageview beacons via `navigator.sendBeacon` to `/api/track/click` and `/api/track/view`. Those handlers:
+## Auth flow
 
-1. Return `{ ok: true }` immediately.
-2. Defer the work with `after(...)` from `next/server`.
-3. Filter bots with `isLikelyBot` and parse device/referrer via `lib/analytics.ts`.
-4. Call `recordEvent` (currently a stub — this is the ClickHouse hook) **and** insert a row into Supabase `link_click_events` via the service-role client as a fallback.
-5. For click events, bump `links.click_count` via the `increment_link_click_count` RPC.
+1. Auth forms → Supabase Auth
+2. DB trigger `handle_new_user()` auto-creates a `profiles` row with a derived username
+3. `/auth/callback` exchanges the code for a session
+4. `proxy.ts` refreshes session cookies on every dashboard request
+5. `requireUser()` in `app/(dashboard)/layout.tsx` enforces the gate
 
-When ClickHouse is wired up, replace the Supabase fallback — don't double-write.
+## Dashboard layout
 
-### RLS model
+The layout is a fixed header + fixed sidebar — content scrolls beneath both:
 
-RLS is ON for every table. Key policies:
+- **Header**: `fixed inset-x-0 top-0 z-50 h-14`
+- **Sidebar**: `fixed top-14 bottom-0 left-0 w-60` (hidden on mobile)
+- **Content offset**: `pt-14 md:pl-60`, inner padding `px-8 py-6`
+- **Sticky panels** inside content (e.g. phone preview): `lg:sticky lg:top-[calc(3.5rem+1.5rem)]` — that value is header height (3.5rem) + content top padding (1.5rem)
 
-- `profiles` — publicly readable; owner-write only.
-- `links` — enabled links in their scheduled window are publicly readable; owners see all their own links.
-- `custom_domains`, `subscriptions`, `link_click_events` — owner-read only. Writes to `subscriptions` and `link_click_events` must go through the service-role client.
+## Appearance system
 
-### Reserved usernames
+`profiles.theme` stores `{ background: string; foreground: string }` as JSONB.
 
-`lib/validations.ts` holds a `RESERVED_USERNAMES` set that must stay in sync with top-level route segments under `app/`. If you add a new top-level route (e.g. `/pricing`, `/blog`), add the segment to the reserved list so it can't collide with `app/[username]`.
+- The canonical colour palette (`PASTEL_THEMES`) lives in `app/(dashboard)/dashboard/appearance/appearance-editor.tsx`. It ships 16 presets: White, Black, and 14 pastels. Every preset includes a pre-computed `foreground` that meets WCAG AA contrast against its `background`. Do not add a colour without a paired foreground.
+- `updateTheme` server action (`app/(dashboard)/dashboard/appearance/actions.ts`) saves to `profiles.theme` and calls `revalidatePath` for both `/dashboard/appearance` and the user's public `/:username` route.
+- The public profile page (`app/[username]/page.tsx`) reads `theme.background` and `theme.foreground` via inline styles. The link cards use `rgba(255,255,255,0.8)` / `rgba(0,0,0,0.08)` border so they work on any background.
 
-### Path alias
+## Shared phone preview
 
-`@/`* resolves to the project root (`tsconfig.json`). Import from `@/lib/...`, `@/components/ui/...`, etc.
+`app/(dashboard)/_components/profile-phone-preview.tsx` exports `<ProfilePhonePreview>` — the single component used by both the Links and Appearance pages. It takes `profile`, `links: { id, title }[]`, and `theme: { background, foreground }`. The card wrapper and sticky positioning are the responsibility of each page's layout. Do not duplicate the phone-frame markup.
 
-### shadcn/ui
+## Links workspace
 
-Style `base-nova`, `baseColor: neutral`, alias `@/components/ui` (see `components.json`). Primitives live in `components/ui/`.
+`app/(dashboard)/dashboard/links/links-workspace.tsx` is a `"use client"` component that:
+- Holds optimistic local state for link ordering, enabled/disabled state, and edits
+- Implements HTML drag-and-drop (`onDragStart` / `onDrop`) for reordering
+- Calls server actions (`actions.ts` in the same directory) for all mutations
+- Passes `enabledLinks.map(l => ({ id, title }))` and the `theme` (fetched by the page server component) to `<ProfilePhonePreview>`
+
+The `theme` prop on `<LinksWorkspace>` is static — it reflects the last-saved theme from the DB. Changing the theme is done on the Appearance page, not here.
+
+## Server actions pattern
+
+Each dashboard route that mutates data has a co-located `actions.ts`:
+- Marked `"use server"` at the top
+- Returns `{ error?: string }` — never throws to the client
+- Calls `requireUser()` first
+- Calls `revalidatePath(...)` on success
+
+## RLS model
+
+RLS is ON for every table:
+
+- `profiles` — publicly readable; owner-write only
+- `links` — publicly readable when `is_enabled = true` and within any scheduled window; owners see all their own links
+- `custom_domains`, `subscriptions`, `link_click_events` — owner-read only; writes to `subscriptions` and `link_click_events` must go through `createServiceRoleClient()`
+
+## Analytics ingest
+
+`/api/track/click` and `/api/track/view` receive `navigator.sendBeacon` pings from the public profile page. They return `{ ok: true }` immediately, then defer work with `after(...)` from `next/server`: bot filtering (`isLikelyBot`), device/referrer parsing (`lib/analytics.ts`), a stub `recordEvent` call (future ClickHouse hook), Supabase `link_click_events` insert via service-role client, and `increment_link_click_count` RPC for click events. When ClickHouse is wired, remove the Supabase fallback — don't double-write.
+
+## Reserved usernames
+
+`lib/validations.ts` holds `RESERVED_USERNAMES`. Every top-level route segment under `app/` that could collide with a public username must be in this set. Add to both simultaneously.
+
+## Known incomplete areas
+
+- Profile editing (display name, bio, avatar upload to Cloudflare R2)
+- Paystack checkout and subscription management
+- Custom domain verification
+- ClickHouse analytics (currently stubbed; Supabase is the fallback)
+- Legal pages

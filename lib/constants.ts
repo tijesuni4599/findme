@@ -1,4 +1,5 @@
-export const APP_NAME = "NaijaLinks";
+export const APP_NAME = "findme";
+export const APP_DOMAIN = "findme.ng";
 export const APP_DESCRIPTION =
   "A customisable link-in-bio landing page builder with real-time analytics, built for Nigerian creators.";
 

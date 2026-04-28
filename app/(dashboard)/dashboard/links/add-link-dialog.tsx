@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { createLink } from "./actions";
 
 export function AddLinkDialog({ disabled }: { disabled?: boolean }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -32,13 +34,18 @@ export function AddLinkDialog({ disabled }: { disabled?: boolean }) {
       }
       form.reset();
       setOpen(false);
+      router.refresh();
       toast.success("Link added");
     });
   }
 
   return (
     <>
-      <Button disabled={disabled} onClick={() => setOpen(true)}>
+      <Button
+        disabled={disabled}
+        className="active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
+        onClick={() => setOpen(true)}
+      >
         <Plus className="mr-2 h-4 w-4" />
         Add link
       </Button>
