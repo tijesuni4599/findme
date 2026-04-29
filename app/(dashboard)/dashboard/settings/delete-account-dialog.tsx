@@ -42,14 +42,16 @@ export function DeleteAccountDialog() {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="destructive"
-          className="active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete account
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant="destructive"
+            className="active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
+          />
+        }
+      >
+        <Trash2 className="mr-2 h-4 w-4" />
+        Delete account
       </AlertDialogTrigger>
 
       <AlertDialogContent>
