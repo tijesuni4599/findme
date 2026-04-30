@@ -69,12 +69,7 @@ export async function updateAvatar(
     .upload(path, buffer, { contentType: file.type, upsert: true });
 
   if (uploadError) {
-    return {
-      error:
-        uploadError.message.includes("Bucket not found")
-          ? 'Storage not ready. Create a public "avatars" bucket in your Supabase project.'
-          : "Upload failed. Please try again.",
-    };
+    return { error: "Profile photo upload is unavailable right now. Please try again later." };
   }
 
   const {

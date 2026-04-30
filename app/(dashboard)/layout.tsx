@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { APP_DOMAIN } from "@/lib/constants";
 import { Logo } from "@/components/logo";
 import { SignOutButton } from "./_components/signout-button";
+import { MobileNav } from "./_components/mobile-nav";
 
 const nav = [
   { href: "/dashboard/links", label: "Links", icon: LinkIcon },
@@ -132,9 +133,12 @@ export default async function DashboardLayout({
         </div>
       </aside>
 
+      {/* Mobile bottom nav */}
+      <MobileNav />
+
       {/* Scrollable content offset by header + sidebar */}
       <div className="pt-14 md:pl-60">
-        <main className="min-w-0 px-8 py-6">{children}</main>
+        <main className="min-w-0 px-6 py-6 pb-24 md:px-8 md:pb-6">{children}</main>
       </div>
     </div>
   );

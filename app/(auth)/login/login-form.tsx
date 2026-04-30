@@ -27,7 +27,7 @@ export function LoginForm() {
         password,
       });
       if (error) {
-        toast.error(error.message);
+        toast.error("Incorrect email or password. Please try again.");
         return;
       }
       router.replace(next);

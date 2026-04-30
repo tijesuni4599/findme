@@ -41,13 +41,13 @@ export async function createLink(
     .select("plan")
     .eq("id", user.id)
     .single();
-  if (profileError) return { error: profileError.message };
+  if (profileError) return { error: "Failed to add link. Please try again." };
 
   const { count, error: countError } = await supabase
     .from("links")
     .select("id", { count: "exact", head: true })
     .eq("profile_id", user.id);
-  if (countError) return { error: countError.message };
+  if (countError) return { error: "Failed to add link. Please try again." };
 
   if (profile.plan === "free" && (count ?? 0) >= FREE_PLAN_LINK_LIMIT) {
     return { error: "Free plan limit reached. Upgrade to add more links." };
@@ -69,7 +69,7 @@ export async function createLink(
     position: nextPosition,
     is_enabled: parsed.data.is_enabled,
   });
-  if (insertError) return { error: insertError.message };
+  if (insertError) return { error: "Failed to add link. Please try again." };
 
   revalidatePath("/dashboard/links");
   return {};
@@ -88,7 +88,7 @@ export async function toggleLinkEnabled(
     .eq("id", linkId)
     .eq("profile_id", user.id);
 
-  if (error) return { error: error.message };
+  if (error) return { error: "Failed to update link. Please try again." };
 
   revalidatePath("/dashboard/links");
   return {};
@@ -116,7 +116,7 @@ export async function updateLink(
     .eq("id", linkId)
     .eq("profile_id", user.id);
 
-  if (error) return { error: error.message };
+  if (error) return { error: "Failed to update link. Please try again." };
 
   revalidatePath("/dashboard/links");
   return {};
@@ -132,7 +132,7 @@ export async function deleteLink(linkId: string): Promise<LinkMutationState> {
     .eq("id", linkId)
     .eq("profile_id", user.id);
 
-  if (deleteError) return { error: deleteError.message };
+  if (deleteError) return { error: "Failed to delete link. Please try again." };
 
   const { data: remainingLinks, error: remainingError } = await supabase
     .from("links")
@@ -140,7 +140,7 @@ export async function deleteLink(linkId: string): Promise<LinkMutationState> {
     .eq("profile_id", user.id)
     .order("position", { ascending: true });
 
-  if (remainingError) return { error: remainingError.message };
+  if (remainingError) return { error: "Failed to delete link. Please try again." };
 
   for (const [index, link] of (remainingLinks ?? []).entries()) {
     const { error: positionError } = await supabase
@@ -148,7 +148,7 @@ export async function deleteLink(linkId: string): Promise<LinkMutationState> {
       .update({ position: index })
       .eq("id", link.id)
       .eq("profile_id", user.id);
-    if (positionError) return { error: positionError.message };
+    if (positionError) return { error: "Failed to delete link. Please try again." };
   }
 
   revalidatePath("/dashboard/links");
@@ -172,7 +172,7 @@ export async function reorderLinks(
     .select("id")
     .eq("profile_id", user.id);
 
-  if (ownedLinksError) return { error: ownedLinksError.message };
+  if (ownedLinksError) return { error: "Failed to reorder links. Please try again." };
 
   const ownedIds = (ownedLinks ?? []).map((link) => link.id);
   const ownedSet = new Set(ownedIds);
@@ -192,7 +192,7 @@ export async function reorderLinks(
       .update({ position: index })
       .eq("id", linkId)
       .eq("profile_id", user.id);
-    if (error) return { error: error.message };
+    if (error) return { error: "Failed to reorder links. Please try again." };
   }
 
   revalidatePath("/dashboard/links");

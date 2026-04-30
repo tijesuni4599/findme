@@ -33,7 +33,7 @@ export function SignupForm() {
         .eq("username", parsed.data.username)
         .maybeSingle();
       if (lookupError) {
-        toast.error(lookupError.message);
+        toast.error("Something went wrong. Please try again.");
         return;
       }
       if (existing) {
@@ -50,7 +50,7 @@ export function SignupForm() {
         },
       });
       if (error) {
-        toast.error(error.message);
+        toast.error("Could not create your account. Please try again.");
         return;
       }
 
