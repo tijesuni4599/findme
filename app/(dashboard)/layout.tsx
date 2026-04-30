@@ -14,7 +14,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { APP_DOMAIN } from "@/lib/constants";
 import { Logo } from "@/components/logo";
-import { SignOutButton } from "./_components/signout-button";
 import { MobileNav } from "./_components/mobile-nav";
 
 const nav = [
@@ -55,7 +54,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen">
       {/* Fixed top bar */}
       <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="flex h-full items-center justify-between gap-4 px-8">
+        <div className="flex h-full items-center justify-between gap-4 px-4 md:px-8">
           <Link href="/dashboard">
             <Logo />
           </Link>
@@ -65,7 +64,7 @@ export default async function DashboardLayout({
                 href={`/${profile.username}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-sm text-muted-foreground hover:text-foreground"
+                className="hidden text-sm text-muted-foreground hover:text-foreground sm:block"
               >
                 {APP_DOMAIN}/{profile.username}
               </a>
@@ -76,7 +75,6 @@ export default async function DashboardLayout({
               ) : null}
               <AvatarFallback>{initial.toUpperCase()}</AvatarFallback>
             </Avatar>
-            <SignOutButton />
           </div>
         </div>
       </header>
@@ -138,7 +136,7 @@ export default async function DashboardLayout({
 
       {/* Scrollable content offset by header + sidebar */}
       <div className="pt-14 md:pl-60">
-        <main className="min-w-0 px-6 py-6 pb-24 md:px-8 md:pb-6">{children}</main>
+        <main className="min-w-0 px-4 py-6 pb-24 md:px-8 md:pb-6">{children}</main>
       </div>
     </div>
   );

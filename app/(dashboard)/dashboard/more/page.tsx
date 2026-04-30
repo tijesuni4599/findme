@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { APP_DOMAIN } from "@/lib/constants";
+import { SignOutButton } from "@/app/(dashboard)/_components/signout-button";
 
 export const metadata: Metadata = { title: "More" };
 
@@ -117,6 +118,14 @@ export default async function MorePage() {
           </div>
         </div>
       ))}
+
+      {/* Sign out */}
+      <div className="overflow-hidden rounded-xl border border-destructive/30 bg-background">
+        <div className="flex items-center justify-between px-4 py-3.5">
+          <p className="text-sm font-medium text-destructive">Sign out</p>
+          <SignOutButton variant="destructive" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -5,7 +5,11 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/browser";
 
-export function SignOutButton() {
+export function SignOutButton({
+  variant = "ghost",
+}: {
+  variant?: "ghost" | "destructive" | "outline";
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -20,7 +24,7 @@ export function SignOutButton() {
 
   return (
     <Button
-      variant="ghost"
+      variant={variant}
       size="sm"
       onClick={onClick}
       disabled={pending}
