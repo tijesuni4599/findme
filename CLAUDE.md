@@ -5,11 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 - `pnpm dev` — Next.js dev server (Turbopack)
-- `pnpm build` — production build
+- `pnpm build` — production build (also runs TypeScript — use this to verify changes)
 - `pnpm start` — serve the production build
-- `pnpm lint` — ESLint (`eslint-config-next`)
 
-Use `pnpm` for all installs — `pnpm-lock.yaml` is the source of truth. No test framework is configured; `pnpm lint` and `pnpm build` are the primary verification steps.
+Use `pnpm` for all installs — `pnpm-lock.yaml` is the source of truth. No test framework and no lint script are configured; `pnpm build` is the primary verification step.
 
 ### Database
 
@@ -26,6 +25,7 @@ supabase gen types typescript --project-id <id> > lib/supabase/types.ts
 Main surfaces:
 - `app/[username]/` — public profile page (unauthenticated)
 - `app/(dashboard)/` — authenticated dashboard
+- `app/(dashboard)/dashboard/more/` — mobile-only "More" page (Domain, Billing, Settings, Sign out)
 - `app/(auth)/` — login and signup
 - `app/api/track/` — click + pageview analytics ingest
 - `app/api/webhooks/paystack/` — billing webhook
@@ -68,12 +68,13 @@ Never import `createServiceRoleClient` from a component. In `lib/supabase/middle
 
 ## Dashboard layout
 
-The layout is a fixed header + fixed sidebar — content scrolls beneath both:
+The layout is a fixed header + fixed sidebar (desktop) + fixed bottom nav (mobile) — content scrolls beneath all three:
 
-- **Header**: `fixed inset-x-0 top-0 z-50 h-14`
-- **Sidebar**: `fixed top-14 bottom-0 left-0 w-60` (hidden on mobile)
-- **Content offset**: `pt-14 md:pl-60`, inner padding `px-8 py-6`
-- **Sticky panels** inside content (e.g. phone preview): `lg:sticky lg:top-[calc(3.5rem+1.5rem)]` — that value is header height (3.5rem) + content top padding (1.5rem)
+- **Header**: `fixed inset-x-0 top-0 z-50 h-14`, padding `px-4 md:px-8`
+- **Sidebar**: `fixed top-14 bottom-0 left-0 w-60` — `md:flex`, hidden on mobile
+- **Mobile bottom nav**: `fixed bottom-0 inset-x-0 h-16` — `md:hidden`, defined in `app/(dashboard)/_components/mobile-nav.tsx`. Tabs: Links, Analytics, Appearance, More. "More" tab is active for `/dashboard/domain`, `/dashboard/billing`, `/dashboard/settings`, and `/dashboard/more`.
+- **Content offset**: `pt-14 md:pl-60`, inner padding `px-4 py-6 pb-24 md:px-8 md:pb-6` (`pb-24` on mobile clears the bottom nav)
+- **Sticky panels** inside content (e.g. phone preview): `lg:sticky lg:top-[calc(3.5rem+1.5rem)]` — header height (3.5rem) + content top padding (1.5rem)
 
 ## Appearance system
 

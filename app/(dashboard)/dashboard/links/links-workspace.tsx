@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import {
+  ArrowUpRight,
   Globe2,
   GripVertical,
   PencilLine,
@@ -241,7 +242,7 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
 
   return (
     <>
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_324px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_324px]">
         <section className="flex flex-col gap-2.5">
           {links.length === 0 ? (
             <Card>
@@ -370,12 +371,21 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
                 Updates instantly as you edit, reorder, or disable links.
               </CardDescription>
             </CardHeader>
-            <CardContent className="px-3 pt-3">
+            <CardContent className="flex flex-col gap-3 px-3 pt-3">
               <ProfilePhonePreview
                 profile={profile}
                 links={enabledLinks.map((l) => ({ id: l.id, title: l.title }))}
                 theme={theme}
               />
+              <a
+                href={`/${profile.username}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                Go to my public profile
+                <ArrowUpRight className="h-3 w-3" />
+              </a>
             </CardContent>
           </Card>
         </aside>

@@ -64,9 +64,9 @@ export default async function DashboardLayout({
                 href={`/${profile.username}`}
                 target="_blank"
                 rel="noreferrer"
-                className="hidden text-sm text-muted-foreground hover:text-foreground sm:block"
+                className="text-sm text-muted-foreground hover:text-foreground"
               >
-                {APP_DOMAIN}/{profile.username}
+                {`findme/${profile.username.length > 12 ? profile.username.slice(0, 12) + "…" : profile.username}`}
               </a>
             ) : null}
             <Avatar className="h-8 w-8">
@@ -135,7 +135,7 @@ export default async function DashboardLayout({
       <MobileNav />
 
       {/* Scrollable content offset by header + sidebar */}
-      <div className="pt-14 md:pl-60">
+      <div className="overflow-x-hidden pt-14 md:pl-60">
         <main className="min-w-0 px-4 py-6 pb-24 md:px-8 md:pb-6">{children}</main>
       </div>
     </div>
