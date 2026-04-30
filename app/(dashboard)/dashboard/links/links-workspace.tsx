@@ -80,6 +80,11 @@ function getHostname(url: string) {
   }
 }
 
+function displayHost(url: string, max = 20) {
+  const host = getHostname(url);
+  return host.length > max ? host.slice(0, max) + "…" : host;
+}
+
 function getThumbnailSrc(link: LinkItem) {
   if (link.thumbnail_url) return link.thumbnail_url;
   try {
@@ -291,10 +296,10 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
 
                     <LinkThumbnail link={link} className="h-9 w-9 rounded-md" />
 
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 overflow-hidden">
                       <p className="truncate font-medium leading-tight">{link.title}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {getHostname(link.url)}
+                        {displayHost(link.url)}
                       </p>
                     </div>
 
@@ -302,7 +307,7 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
                       {link.click_count.toLocaleString()} clicks
                     </span>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex shrink-0 items-center gap-1">
                       <Switch
                         checked={link.is_enabled}
                         onCheckedChange={(checked) => {
