@@ -33,7 +33,7 @@ export function ProfilePhonePreview({
   return (
     <div className="flex flex-col gap-3">
       {/* Phone frame */}
-      <div className="mx-auto w-[286px] rounded-[36px] border border-border/80 bg-muted/20 p-2 shadow-[0_10px_30px_rgba(0,0,0,0.12)]">
+      <div className="mx-auto w-full max-w-[286px] rounded-[36px] border border-border/80 bg-muted/20 p-2 shadow-[0_10px_30px_rgba(0,0,0,0.12)]">
         <div
           className="flex h-[560px] flex-col overflow-hidden rounded-[30px] transition-colors duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
           style={{ backgroundColor: theme.background, color: theme.foreground }}

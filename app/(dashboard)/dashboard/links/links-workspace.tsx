@@ -259,7 +259,7 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
                 <Card
                   key={link.id}
                   className={cn(
-                    "py-0 transition-shadow duration-200 ease-[cubic-bezier(0.2,0,0,1)]",
+                    "overflow-hidden py-0 transition-shadow duration-200 ease-[cubic-bezier(0.2,0,0,1)]",
                     draggingId === link.id && "ring-2 ring-primary/30",
                     !link.is_enabled && "opacity-75",
                   )}
@@ -278,7 +278,7 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
                       type="button"
                       draggable
                       aria-label={`Drag to reorder ${link.title}`}
-                      className="flex h-10 w-10 shrink-0 cursor-grab items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-muted hover:text-foreground active:scale-[0.96] active:cursor-grabbing"
+                      className="hidden h-10 w-10 shrink-0 cursor-grab items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-muted hover:text-foreground active:scale-[0.96] active:cursor-grabbing sm:flex"
                       onDragStart={(event) => {
                         setDraggingId(link.id);
                         event.dataTransfer.effectAllowed = "move";
@@ -320,7 +320,7 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
                         variant="ghost"
                         size="icon-sm"
                         aria-label={`Edit ${link.title}`}
-                        className="h-10 w-10 rounded-lg active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
+                        className="rounded-lg active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
                         onClick={() => openEdit(link)}
                       >
                         <PencilLine className="h-4 w-4" />
@@ -331,7 +331,7 @@ export function LinksWorkspace({ initialLinks, profile, theme }: LinksWorkspaceP
                         variant="ghost"
                         size="icon-sm"
                         aria-label={`Delete ${link.title}`}
-                        className="h-10 w-10 rounded-lg text-destructive active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
+                        className="rounded-lg text-destructive active:scale-[0.96] transition-transform duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
                         onClick={() => void handleDelete(link)}
                       >
                         <Trash2 className="h-4 w-4" />
